@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Page</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<div>
+  <a href="/fake" class="pageshift">생성 페이지로 이동</a>
+  <a href="/detect" class="pageshift">검증 페이지로 이동</a>
+</div>
+<body>
+  <!-- 이 아래부터 소켓 채팅 기능 UI -->
+  <h2>실시간 채팅 모니터</h2>
+  <div class="chat-container">
+    <a>시스템 채팅 및 모니터링...</a>
+    <div class="chat-box" id="realtimeChatBox">
+    </div>
+    <form class="chat-input" onsubmit="event.preventDefault(); sendRealtimeMessage();">
+      <input type="text" id="realtimeUserInput" placeholder="Type a message...">
+      <button type="submit">Send</button>
+    </form>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+  <script>
+    var socket = io.connect("http://" + document.domain + ":" + location.port);
+    socket.on("message", function(data) {
+      // 실시간 채팅 메시지를 받았을 때의 처리
+      var chatBox = document.getElementById("realtimeChatBox");
+      var messageClass;
+      switch(data.type) {
+        case "생성자":
+          messageClass = "user";
+          break;
+        case "탐지자":
+          messageClass = "user2";
+          break;
+        case "System":
+          messageClass = "admin";
+          break;
+        default:
+          messageClass = "defaultUser";
+      }
+      chatBox.innerHTML += "<p class='" + messageClass + "'>" + data.type + ': ' + data.text + "</p>";
+    });
+    function sendRealtimeMessage() {
+      var input = document.getElementById("realtimeUserInput");
+      var message = input.value.trim();
+      if (message !== "") {
+        socket.emit("message", {type: "System", text: message});
+        input.value = "";
+      }
+    }
+  </script>
+</body>
+</html>

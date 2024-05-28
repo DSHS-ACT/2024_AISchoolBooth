@@ -4,146 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>가짜뉴스 생성기</title>
-  <style>
-    body {
-      font-family: "Arial", sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-
-    .sidenav {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1;
-      top: 0;
-      left: 0;
-      background-color: #111;
-      overflow-x: hidden;
-      transition: 0.5s;
-      padding-top: 60px;
-      color: white;
-    }
-
-    .sidenav a {
-      padding: 8px 8px 8px 32px;
-      text-decoration: none;
-      font-size: 25px;
-      color: #818181;
-      display: block;
-      transition: 0.3s;
-    }
-
-    .sidenav a:hover {
-      color: #f1f1f1;
-    }
-
-    .sidenav .closebtn {
-      position: absolute;
-      top: 0;
-      right: 25px;
-      font-size: 36px;
-      margin-left: 50px;
-    }
-
-    .open-button {
-      font-size: 30px;
-      cursor: pointer;
-      background-color: #111;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      position: absolute;
-      top: 10px;
-      left: 10px;
-    }
-
-    .chat-container {
-      max-width: 600px;
-      margin: 50px auto;
-      background: white;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      border-radius: 10px;
-    }
-
-    .chat-box {
-      border: 1px solid #ccc;
-      padding: 10px;
-      height: 300px;
-      overflow-y: scroll;
-      margin-bottom: 20px;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-
-    .user, .user2, .assistant {
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 10px;
-    }
-
-    .user {
-      background-color: #d1e7dd;
-      align-self: flex-end;
-    }
-
-    .user2 {
-      background-color: #d1dae7;
-      align-self: flex-end;
-    }
-
-    .assistant {
-      background-color: #f8d7da;
-      align-self: flex-start;
-    }
-
-    .chat-input {
-      display: flex;
-    }
-
-    .chat-input input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-right: 10px;
-    }
-
-    .chat-input button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-
-    .chat-input button:hover {
-      background-color: #0056b3;
-    }
-
-    h2 {
-      text-align: center;
-    }
-
-    .pageshift {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      text-decoration: none;
-      text-align: center;
-      border-radius: 5px; 
-    }
-    .pageshift:hover {
-      background-color: #45a049;
-    }
-  </style>
+  <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
   <div id="mySidenav" class="sidenav">
@@ -160,10 +21,10 @@
     <div class="chat-box" id="chatBox">
       <div class="assistant">최대 네 가지 키워드를 작성해주세요.</div>
     </div>
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="여기에 텍스트 입력...">
-      <button onclick="sendMessage()">생성하기</button>
-    </div>
+    <form class="chat-input" onsubmit="event.preventDefault(); sendMessage();">
+      <input type="text" id="userInput" placeholder="여기에 키워드 입력">
+      <button type="submit">생성하기</button>
+    </form>
   </div>
   </div>
   <!-- 이 아래부터 소켓 채팅 기능 UI -->
@@ -171,12 +32,11 @@
   <div class="chat-container">
     <a>아래에 제출할 뉴스를 전송해 주세요.</a>
     <div class="chat-box" id="realtimeChatBox">
-      <!-- 실시간 채팅 메시지 표시 -->
     </div>
-    <div class="chat-input">
+    <form class="chat-input" onsubmit="event.preventDefault(); sendRealtimeMessage();">
       <input type="text" id="realtimeUserInput" placeholder="Type a message...">
-      <button onclick="sendRealtimeMessage()">Send</button>
-    </div>
+      <button type="submit">Send</button>
+    </form>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
   <script>
@@ -184,13 +44,29 @@
     socket.on("message", function(data) {
       // 실시간 채팅 메시지를 받았을 때의 처리
       var chatBox = document.getElementById("realtimeChatBox");
-      var messageClass = data.type === "생성자" ? "user" : "user2";
+      var messageClass;
+      switch(data.type) {
+        case "생성자":
+          messageClass = "user";
+          break;
+        case "탐지자":
+          messageClass = "user2";
+          break;
+        case "System":
+          messageClass = "admin";
+          break;
+        default:
+          messageClass = "defaultUser";
+      }
       chatBox.innerHTML += "<p class='" + messageClass + "'>" + data.type + ': ' + data.text + "</p>";
     });
     function sendRealtimeMessage() {
       var input = document.getElementById("realtimeUserInput");
-      socket.emit("message", {type: "생성자", text: input.value});
-      input.value = "";
+      var message = input.value.trim();
+      if (message !== "") { 
+        socket.emit("message", {type: "생성자", text: message});
+        input.value = "";
+      }
     }
   </script>
   <!-- AI 채팅 코드 -->
@@ -203,7 +79,7 @@
       document.getElementById("mySidenav").style.width = "0";
     }
 
-    fetch("static/news.txt")
+    fetch("static/news.md")
       .then(response => response.text())
       .then(data => {
         document.getElementById("newsContainer").innerHTML = data;
