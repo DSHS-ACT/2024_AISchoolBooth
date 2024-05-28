@@ -60,5 +60,4 @@ def handle_message(data):
   send({'type': message_type, 'text': message_text}, broadcast=True)
 
 if __name__ == '__main__':
-  app.run(debug=True)
-  socketio.run(app)
+  socketio.run(app, host='0.0.0.0')
