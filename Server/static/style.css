@@ -138,6 +138,20 @@ h2 {
   text-align: center;
   border-radius: 5px; 
 }
+
 .pageshift:hover {
   background-color: #474747;
+}
+
+#newsContainer {
+  text-align: left;
+  font-size: 15px;
+  background: rgb(0, 0, 0);
+  padding: 30px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+md-block {
+  text-align: left;
 }
