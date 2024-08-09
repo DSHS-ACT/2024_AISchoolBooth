@@ -5,7 +5,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from openai import OpenAI
 
-client = OpenAI(api_key="sk-proj-8CoRJ86LEzsOAyywmLkdT3BlbkFJwthj3qyRj5OGcH1r3a10")
+client = OpenAI(api_key="THERE_IS_NO_API_KEY")
 
 app = Flask(__name__)
 socketio = SocketIO(app)
